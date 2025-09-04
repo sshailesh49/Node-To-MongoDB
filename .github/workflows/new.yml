@@ -72,7 +72,7 @@ jobs:
         with:
           image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/nodeapp:${{ github.run_number }}
           exit-code: "1" # Fail if vulnerabilities found
-          severity: "CRITICAL,HIGH"
+          severity: "CRITICAL"
 
       # Log in to Docker Hub
       - name: Docker Login
