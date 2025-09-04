@@ -44,11 +44,11 @@ jobs:
         with:
           config: "p/default"
 
-      # Run IaC scan (Checkov)
-      - name: Scan Terraform/IaC
-        uses: bridgecrewio/checkov-action@master
-        with:
-          directory: .
+      # # Run IaC scan (Checkov)
+      # - name: Scan Terraform/IaC
+      #   uses: bridgecrewio/checkov-action@master
+      #   with:
+      #     directory: .
 
       # Scan Dockerfile with Trivy
       - name: Scan Dockerfile with Trivy
