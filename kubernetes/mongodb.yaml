@@ -16,12 +16,13 @@ spec:
     spec:
       securityContext:
         runAsNonRoot: true
-        runAsUser: 1000
-        fsGroup: 1000
+        runAsUser: 2000
+        fsGroup: 2000
       automountServiceAccountToken: false
       containers:
         - name: mongodb
-          image: mongo:7.0.1
+          image: mongo@sha256:<mongo-image-digest>
+          imagePullPolicy: Always
           ports:
             - containerPort: 27017
           env:
@@ -51,6 +52,14 @@ spec:
           volumeMounts:
             - name: mongodb-persistent-storage
               mountPath: /data/db
+            - name: mongodb-secret-vol
+              mountPath: /etc/mongodb-secret
+              readOnly: true
+       volumes:
+        - name: mongodb-secret-vol
+          secret:
+            secretName: mongodb-secret
+        
   volumeClaimTemplates:
     - metadata:
         name: mongodb-persistent-storage
