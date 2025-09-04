@@ -2,7 +2,8 @@ const { MongoClient } = require('mongodb');
 
 const username = process.env.MONGO_USERNAME;
 const password = process.env.MONGO_PASSWORD;
-const host = process.env.MONGO_HOST || 'localhost';
+const host = process.env.MONGO_HOST;
+
 const port = process.env.MONGO_PORT || 27017;
 
 const uri = `mongodb://${username}:${password}@${host}:${port}/?authSource=admin`;
