@@ -4,7 +4,7 @@ metadata:
   name: nodeapp
   namespace: app
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: nodeapp
@@ -16,39 +16,13 @@ spec:
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
-        fsGroup: 2000
-        runAsGroup: 2000
-        seccompProfile:
-          type: RuntimeDefault
+        fsGroup: 1000
+      automountServiceAccountToken: false
       containers:
         - name: nodeapp
-          image: node:20-alpine
-          imagePullPolicy: Always
+          image: node:20@sha256:<node-image-digest>
           ports:
             - containerPort: 3000
-          securityContext:
-            allowPrivilegeEscalation: false
-            runAsNonRoot: true
-            readOnlyRootFilesystem: true
-          resources:
-            requests:
-              memory: "256Mi"
-              cpu: "200m"
-            limits:
-              memory: "512Mi"
-              cpu: "400m"
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 3000
-            initialDelaySeconds: 10
-            periodSeconds: 10
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 3000
-            initialDelaySeconds: 5
-            periodSeconds: 5
           env:
             - name: MONGO_USERNAME
               valueFrom:
@@ -61,7 +35,22 @@ spec:
                   name: mongodb-secret
                   key: password
             - name: MONGO_HOST
-              valueFrom:
-                 secretKeyRef:
-                    name: mongodb-secret
-                    key: host
+              value: mongodb.app.svc.cluster.local
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nodeapp
+  namespace: app
+spec:
+  type: ClusterIP
+  selector:
+    app: nodeapp
+  ports:
+    - port: 3000
+      targetPort: 3000
