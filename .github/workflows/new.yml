@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ "main" ]
 
+permissions:
+  contents: read        # needed for actions/checkout
+  packages: write       # needed if pushing Docker image
+  security-events: write  # needed if uploading SARIF (e.g. for code scanning)
+
 jobs:
   build-test-scan:
     runs-on: ubuntu-latest
