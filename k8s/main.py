@@ -104,7 +104,7 @@ metadata:
   name: nodeapp
   namespace: app
 spec:
-  replicas: 1
+  replicas: 4
   selector:
     matchLabels:
       app: nodeapp
