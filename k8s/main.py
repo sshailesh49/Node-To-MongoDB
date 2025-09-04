@@ -63,23 +63,23 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: mongodb
-          image: mongo
+          image: mongo:6
           ports:
             - containerPort: 27017
           env:
-            - name: MONGO_USERNAME
+            - name: MONGO_INITDB_ROOT_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: mongodb-secret
                   key: username
-            - name: MONGO_PASSWORD
+            - name: MONGO_INITDB_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: mongodb-secret
                   key: password
           securityContext:
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: false
+            readOnlyRootFilesystem: false   # must be writable
             capabilities:
               drop: ["ALL"]
           volumeMounts:
@@ -136,6 +136,8 @@ spec:
                   key: password
             - name: MONGO_HOST
               value: mongodb.app.svc.cluster.local
+            - name: MONGO_PORT
+              value: "27017"
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -161,24 +163,24 @@ spec:
 
 ---
 ########################################
-# 7️⃣ Optional NetworkPolicy
+# 7️⃣ Corrected NetworkPolicy (NodeApp → MongoDB)
 ########################################
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-app-traffic
+  name: allow-nodeapp-to-mongodb
   namespace: app
 spec:
   podSelector:
     matchLabels:
-      app: nodeapp
+      app: mongodb
   policyTypes:
     - Ingress
   ingress:
     - from:
         - podSelector:
             matchLabels:
-              app: mongodb
+              app: nodeapp
       ports:
         - protocol: TCP
-          port: 3000
+          port: 27017
