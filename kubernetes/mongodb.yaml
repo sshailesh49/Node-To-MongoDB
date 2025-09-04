@@ -26,6 +26,8 @@ spec:
       labels:
         app: mongodb
     spec:
+      securityContext:
+        runAsNonRoot: true
       containers:
         - name: mongodb
           image: mongo:6.0
@@ -36,6 +38,9 @@ spec:
               value: admin
             - name: MONGO_INITDB_ROOT_PASSWORD
               value: password123
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
           volumeMounts:
             - name: mongodb-persistent-storage
               mountPath: /data/db
