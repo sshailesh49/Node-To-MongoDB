@@ -61,4 +61,7 @@ spec:
                   name: mongodb-secret
                   key: password
             - name: MONGO_HOST
-              value: mongodb.app.svc.cluster.local
+              valueFrom:
+                 secretKeyRef:
+                    name: mongodb-secret
+                    key: host
