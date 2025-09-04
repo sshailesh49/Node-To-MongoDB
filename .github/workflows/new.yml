@@ -30,6 +30,10 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      # Auto fix known vulnerabilities
+      - name: Run npm audit fix
+        run: npm audit fix || true
+
       # Run tests
       - name: Run tests
         run: npm test || echo "No test found"
