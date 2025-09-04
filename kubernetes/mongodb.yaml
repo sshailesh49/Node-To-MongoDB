@@ -1,17 +1,3 @@
-apiVersion: v1
-kind: Service
-metadata:
-  name: mongodb
-  namespace: app
-  labels:
-    app: mongodb
-spec:
-  ports:
-    - port: 27017
-  clusterIP: None
-  selector:
-    app: mongodb
----
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -31,62 +17,35 @@ spec:
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
-        runAsGroup: 2000
-        fsGroup: 2000
-        seccompProfile:
-          type: RuntimeDefault
+        fsGroup: 1000
+      automountServiceAccountToken: false
       containers:
         - name: mongodb
-          image: mongo:6.0@sha256:REPLACE_WITH_DIGEST
-          imagePullPolicy: Always
+          image: mongo@sha256:<mongo-image-digest>
           ports:
             - containerPort: 27017
           env:
-            - name: MONGO_INITDB_ROOT_USERNAME
+            - name: MONGO_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: mongodb-secret
                   key: username
-            - name: MONGO_INITDB_ROOT_PASSWORD
+            - name: MONGO_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: mongodb-secret
                   key: password
           securityContext:
-            runAsNonRoot: true
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: false   # Cannot set true because MongoDB needs writable /data/db
+            readOnlyRootFilesystem: false  # MongoDB needs write access
             capabilities:
               drop: ["ALL"]
-          resources:
-            requests:
-              memory: "512Mi"
-              cpu: "250m"
-            limits:
-              memory: "1Gi"
-              cpu: "500m"
-          livenessProbe:
-            exec:
-              command:
-                - mongo
-                - --eval
-                - "db.adminCommand('ping')"
-            initialDelaySeconds: 30
-            periodSeconds: 10
-          readinessProbe:
-            exec:
-              command:
-                - mongo
-                - --eval
-                - "db.adminCommand('ping')"
-            initialDelaySeconds: 10
-            periodSeconds: 5
           volumeMounts:
-            - name: mongodb-data
+            - name: mongodb-persistent-storage
               mountPath: /data/db
   volumeClaimTemplates:
     - metadata:
-        name: mongodb-data
+        name: mongodb-persistent-storage
       spec:
         accessModes: ["ReadWriteOnce"]
         resources:
