@@ -28,3 +28,6 @@ spec:
               value: mongodb    # Service name of MongoDB
             - name: DB_PORT
               value: "27017"
+          securityContext:   # 🔒 FIXED PART
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
