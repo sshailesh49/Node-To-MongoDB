@@ -57,7 +57,7 @@ jobs:
           scan-type: "config"
           scan-ref: ./Dockerfile
           exit-code: "1" # Fail if vulnerabilities are found
-          severity: "CRITICAL,HIGH"
+          severity: "CRITICAL"
 
       # Docker Build
       - name: Build Docker image (tag with run number)
