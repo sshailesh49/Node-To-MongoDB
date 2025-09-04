@@ -61,16 +61,16 @@ jobs:
 
       # Docker Build
       - name: Build Docker image (tag with run number)
-        run: docker build -t pankaj6262/nodeapp:${{ github.run_number }} .
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/nodeapp:${{ github.run_number }} .
 
       - name: Build Docker image (latest)
-        run: docker build -t pankaj6262/nodeapp:latest .
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/nodeapp:latest .
 
       # Security scan with Trivy on built image
       - name: Scan Docker image with Trivy
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: pankaj6262/nodeapp:${{ github.run_number }}
+          image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/nodeapp:${{ github.run_number }}
           exit-code: "1" # Fail if vulnerabilities found
           severity: "CRITICAL"
 
@@ -83,4 +83,9 @@ jobs:
 
       # Push image
       - name: Push Docker image
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/nodeapp:${{ github.sha }}
+              # Push images
+      - name: Push Docker images
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/nodeapp:${{ github.run_number }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/nodeapp:latest
+
