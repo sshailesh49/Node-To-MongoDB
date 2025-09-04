@@ -2,12 +2,13 @@ apiVersion: v1
 kind: Service
 metadata:
   name: mongodb
+  namespace: app
   labels:
     app: mongodb
 spec:
   ports:
     - port: 27017
-  clusterIP: None   # Headless service for StatefulSet
+  clusterIP: None
   selector:
     app: mongodb
 ---
@@ -15,6 +16,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: mongodb
+  namespace: app
 spec:
   serviceName: "mongodb"
   replicas: 1
@@ -28,27 +30,60 @@ spec:
     spec:
       securityContext:
         runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 2000
+        runAsGroup: 2000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: mongodb
-          image: mongo:6.0
+          image: mongo:6.0@sha256:REPLACE_WITH_DIGEST
+          imagePullPolicy: Always
           ports:
             - containerPort: 27017
           env:
             - name: MONGO_INITDB_ROOT_USERNAME
               value: admin
             - name: MONGO_INITDB_ROOT_PASSWORD
-              value: password123
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: password
           securityContext:
-            runAsNonRoot: true
             allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          livenessProbe:
+            exec:
+              command:
+                - mongo
+                - --eval
+                - "db.adminCommand('ping')"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - mongo
+                - --eval
+                - "db.adminCommand('ping')"
+            initialDelaySeconds: 10
+            periodSeconds: 5
           volumeMounts:
-            - name: mongodb-persistent-storage
+            - name: mongodb-data
               mountPath: /data/db
   volumeClaimTemplates:
     - metadata:
-        name: mongodb-persistent-storage
+        name: mongodb-data
       spec:
-        accessModes: [ "ReadWriteOnce" ]
+        accessModes: ["ReadWriteOnce"]
         resources:
           requests:
             storage: 2Gi
