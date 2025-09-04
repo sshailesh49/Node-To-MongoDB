@@ -21,7 +21,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: mongodb
-          image: mongo@sha256:<mongo-image-digest>
+          image: mongo:7.0.1
           ports:
             - containerPort: 27017
           env:
@@ -37,9 +37,17 @@ spec:
                   key: password
           securityContext:
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: false  # MongoDB needs write access
+            readOnlyRootFilesystem: false # MongoDB needs write access
+            runAsNonRoot: true
             capabilities:
               drop: ["ALL"]
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
           volumeMounts:
             - name: mongodb-persistent-storage
               mountPath: /data/db
@@ -63,4 +71,3 @@ spec:
     app: mongodb
   ports:
     - port: 27017
-
